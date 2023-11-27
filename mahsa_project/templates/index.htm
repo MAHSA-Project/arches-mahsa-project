@@ -78,7 +78,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
                         <li>
                             <a href="#info-block-1">{% trans "Arches Features" %}</a>
                         </li>
-                        <li>
+			<li>
                             <a href="{% url 'search_home' %}">{% trans "Search Arches" %}</a>
                         </li>
                         {% if user|can_create_resource_instance and user.username != 'anonymous' %}
@@ -91,7 +91,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
                                 <a class="application-login" id="auth-link" href="{% url 'auth' %}?next={% url 'home' %}{% if user.username != 'anonymous' %}&logout=true{% endif %}">{% trans "Sign in" %}</a>
                             </li>
                         {% else %}
-                            <li>
+			    <li>
                                 <a class="auth-welcome" href="{% url 'user_profile_manager' %}">
                                     {% trans "Welcome, " %} {{ user.first_name|default:user.username }}
                                 </a>
