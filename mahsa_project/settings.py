@@ -133,6 +133,7 @@ MIDDLEWARE = [
 ]
 
 ALLOWED_HOSTS = ['databasemahsa.org']
+# ALLOWED_HOSTS = ['*']
 
 SYSTEM_SETTINGS_LOCAL_PATH = os.path.join(APP_ROOT, 'system_settings', 'System_Settings.json')
 WSGI_APPLICATION = 'mahsa_project.wsgi.application'
@@ -218,7 +219,7 @@ DATE_IMPORT_EXPORT_FORMAT = "%Y-%m-%d" # Custom date format for dates imported f
 
 # This is used to indicate whether the data in the CSV and SHP exports should be
 # ordered as seen in the resource cards or not.
-EXPORT_DATA_FIELDS_IN_CARD_ORDER = False
+EXPORT_DATA_FIELDS_IN_CARD_ORDER = True
 
 #Identify the usernames and duration (seconds) for which you want to cache the time wheel
 CACHE_BY_USER = {'anonymous': 3600 * 24}
@@ -228,7 +229,7 @@ GRAPH_MODEL_CACHE_TIMEOUT = None
 
 OAUTH_CLIENT_ID = ''  #'9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4'
 
-APP_TITLE = 'Arches | Heritage Data Management'
+APP_TITLE = 'MAHSA'
 COPYRIGHT_TEXT = 'All Rights Reserved.'
 COPYRIGHT_YEAR = '2019'
 
@@ -241,21 +242,24 @@ NOCAPTCHA = True
 if DEBUG is True:
     SILENCED_SYSTEM_CHECKS = ["captcha.recaptcha_test_key_error"]
 
-
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  #<-- Only need to uncomment this for testing without an actual email server
-# EMAIL_USE_TLS = True
-# EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = "xxxx@xxx.com"
-# EMAIL_HOST_PASSWORD = 'xxxxxxx'
-# EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_PORT = 587
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
+USER_SIGNUP_GROUP = 'Crowdsource Editor'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#ACCOUNT_EMAIL_REQUIRED = False
+#ACCOUNT_EMAIL_VERIFICATION = 'none'
+#ACCOUNT_AUTHENTICATION_METHOD = 'username'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CELERY_BROKER_URL = "" # RabbitMQ --> "amqp://guest:guest@localhost",  Redis --> "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_BACKEND = 'django-db' # Use 'django-cache' if you want to use your cache as your backend
 CELERY_TASK_SERIALIZER = 'json'
-
 
 CELERY_SEARCH_EXPORT_EXPIRES = 24 * 3600  # seconds
 CELERY_SEARCH_EXPORT_CHECK = 3600  # seconds
