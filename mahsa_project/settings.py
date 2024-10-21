@@ -17,10 +17,14 @@ except ImportError:
 
 APP_NAME = 'mahsa_project'
 APP_ROOT = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-STATICFILES_DIRS =  (
-    os.path.join(APP_ROOT, 'media', 'build'),
-    os.path.join(APP_ROOT, 'media'),
-) + STATICFILES_DIRS
+
+ARCHES_APPLICATIONS = ()
+
+STATICFILES_DIRS =  build_staticfiles_dirs(
+    root_dir=ROOT_DIR,
+    app_root=APP_ROOT,
+    arches_applications=ARCHES_APPLICATIONS,
+)
 
 WEBPACK_LOADER = {
     "DEFAULT": {
@@ -32,9 +36,13 @@ DATATYPE_LOCATIONS.append('mahsa_project.datatypes')
 FUNCTION_LOCATIONS.append('mahsa_project.functions')
 ETL_MODULE_LOCATIONS.append('mahsa_project.etl_modules')
 SEARCH_COMPONENT_LOCATIONS.append('mahsa_project.search_components')
-TEMPLATES[0]['DIRS'].append(os.path.join(APP_ROOT, 'functions', 'templates'))
-TEMPLATES[0]['DIRS'].append(os.path.join(APP_ROOT, 'widgets', 'templates'))
-TEMPLATES[0]['DIRS'].insert(0, os.path.join(APP_ROOT, 'templates'))
+
+TEMPLATES = build_templates_config(
+    root_dir=ROOT_DIR,
+    debug=DEBUG,
+    app_root=APP_ROOT,
+    arches_applications=ARCHES_APPLICATIONS,
+)
 
 LOCALE_PATHS.append(os.path.join(APP_ROOT, 'locale'))
 
@@ -48,6 +56,8 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 
 ROOT_URLCONF = 'mahsa_project.urls'
+
+#GOOGLE_ANALYTICS_TRACKING_ID = 'G-852XMREWSF'
 
 # Modify this line as needed for your project to connect to elasticsearch with a password that you generate
 ELASTICSEARCH_CONNECTION_OPTIONS = {"timeout": 30, "verify_certs": False, "basic_auth": ("elastic", "E1asticSearchforArche5")}
@@ -132,8 +142,8 @@ MIDDLEWARE = [
     # "silk.middleware.SilkyMiddleware",
 ]
 
-ALLOWED_HOSTS = ['databasemahsa.org']
-# ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = ['databasemahsa.org']
+ALLOWED_HOSTS = ['*']
 
 SYSTEM_SETTINGS_LOCAL_PATH = os.path.join(APP_ROOT, 'system_settings', 'System_Settings.json')
 WSGI_APPLICATION = 'mahsa_project.wsgi.application'
@@ -201,7 +211,8 @@ SESSION_COOKIE_NAME = 'mahsa_project'
 # For more info on configuring your cache: https://docs.djangoproject.com/en/2.2/topics/cache/
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache', #'django.core.cache.backends.dummy.DummyCache',
+        'LOCATION' : 'redis://@localhost:6379/0'
     },
     'user_permission': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
@@ -219,7 +230,7 @@ DATE_IMPORT_EXPORT_FORMAT = "%Y-%m-%d" # Custom date format for dates imported f
 
 # This is used to indicate whether the data in the CSV and SHP exports should be
 # ordered as seen in the resource cards or not.
-EXPORT_DATA_FIELDS_IN_CARD_ORDER = True
+EXPORT_DATA_FIELDS_IN_CARD_ORDER = False
 
 #Identify the usernames and duration (seconds) for which you want to cache the time wheel
 CACHE_BY_USER = {'anonymous': 3600 * 24}
@@ -227,7 +238,7 @@ TILE_CACHE_TIMEOUT = 600 #seconds
 CLUSTER_DISTANCE_MAX = 5000 #meters
 GRAPH_MODEL_CACHE_TIMEOUT = None
 
-OAUTH_CLIENT_ID = ''  #'9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4'
+OAUTH_CLIENT_ID = 'kU2SpmzRYwvLxt0BGs1Ed22hQBY8fXHZZ4P0gqPd'  #'9JCibwrWQ4hwuGn5fu2u1oRZSs9V6gK8Vu8hpRC4'
 
 APP_TITLE = 'MAHSA'
 COPYRIGHT_TEXT = 'All Rights Reserved.'
@@ -249,14 +260,14 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_PORT = 587
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
-USER_SIGNUP_GROUP = 'Crowdsource Editor'
+USER_SIGNUP_GROUP = 'Guest'
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #ACCOUNT_EMAIL_REQUIRED = False
 #ACCOUNT_EMAIL_VERIFICATION = 'none'
 #ACCOUNT_AUTHENTICATION_METHOD = 'username'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-CELERY_BROKER_URL = "" # RabbitMQ --> "amqp://guest:guest@localhost",  Redis --> "redis://localhost:6379/0"
+CELERY_BROKER_URL = "redis://@localhost:6379/0" # RabbitMQ --> "amqp://guest:guest@localhost",  Redis --> "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_BACKEND = 'django-db' # Use 'django-cache' if you want to use your cache as your backend
 CELERY_TASK_SERIALIZER = 'json'
@@ -343,14 +354,11 @@ except ImportError as e:
 
 # returns an output that can be read by NODEJS
 if __name__ == "__main__":
-    print(
-        json.dumps({
-            'ARCHES_NAMESPACE_FOR_DATA_EXPORT': ARCHES_NAMESPACE_FOR_DATA_EXPORT,
-            'STATIC_URL': STATIC_URL,
-            'ROOT_DIR': ROOT_DIR,
-            'APP_ROOT': APP_ROOT,
-            'WEBPACK_DEVELOPMENT_SERVER_PORT': WEBPACK_DEVELOPMENT_SERVER_PORT,
-        })
+    transmit_webpack_django_config(
+        root_dir=ROOT_DIR,
+        app_root=APP_ROOT,
+        arches_applications=ARCHES_APPLICATIONS,
+        public_server_address=PUBLIC_SERVER_ADDRESS,
+        static_url=STATIC_URL,
+        webpack_development_server_port=WEBPACK_DEVELOPMENT_SERVER_PORT,
     )
-    sys.stdout.flush()
-
