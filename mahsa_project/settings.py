@@ -18,19 +18,22 @@ except ImportError:
 APP_NAME = 'mahsa_project'
 APP_ROOT = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
-ARCHES_APPLICATIONS = ()
+#ARCHES_APPLICATIONS = ()
 
-STATICFILES_DIRS =  build_staticfiles_dirs(
-    root_dir=ROOT_DIR,
+STATICFILES_DIRS = build_staticfiles_dirs(app_root=APP_ROOT)
+
+TEMPLATES = build_templates_config(
+    debug=DEBUG,
     app_root=APP_ROOT,
-    arches_applications=ARCHES_APPLICATIONS,
 )
 
 WEBPACK_LOADER = {
     "DEFAULT": {
-        "STATS_FILE": os.path.join(APP_ROOT, 'webpack/webpack-stats.json'),
+        "STATS_FILE": os.path.join(APP_ROOT, '..', 'webpack/webpack-stats.json'),
     },
 }
+
+LOCALE_PATHS.insert(0, os.path.join(APP_ROOT, 'locale'))
 
 DATATYPE_LOCATIONS.append('mahsa_project.datatypes')
 FUNCTION_LOCATIONS.append('mahsa_project.functions')
@@ -38,17 +41,16 @@ ETL_MODULE_LOCATIONS.append('mahsa_project.etl_modules')
 SEARCH_COMPONENT_LOCATIONS.append('mahsa_project.search_components')
 
 TEMPLATES = build_templates_config(
-    root_dir=ROOT_DIR,
     debug=DEBUG,
     app_root=APP_ROOT,
-    arches_applications=ARCHES_APPLICATIONS,
 )
 
 LOCALE_PATHS.append(os.path.join(APP_ROOT, 'locale'))
 
 FILE_TYPE_CHECKING = False
-FILE_TYPES = ["bmp", "gif", "jpg", "jpeg", "pdf", "png", "psd", "rtf", "tif", "tiff", "xlsx", "csv", "zip"]
+FILE_TYPES = ["bmp", "gif", "jpg", "jpeg", "pdf", "png", "psd", "rtf", "tif", "tiff", "xlsx", "csv", "zip", "json"]
 
+#BULK_IMPORT_BATCH_SIZE=1
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
@@ -103,6 +105,7 @@ DATABASES = {
 }
 
 INSTALLED_APPS = (
+    "mahsa_project",
     "webpack_loader",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -120,10 +123,14 @@ INSTALLED_APPS = (
     "corsheaders",
     "oauth2_provider",
     "django_celery_results",
-    "compressor",
+    "django_hosts",
     # "silk",
-    "mahsa_project",
 )
+
+INSTALLED_APPS += ("arches.app",)
+
+ROOT_HOSTCONF = "mahsa_project.hosts"
+DEFAULT_HOST = "mahsa_project"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -137,10 +144,19 @@ MIDDLEWARE = [
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    # "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "arches.app.utils.middleware.SetAnonymousUser",
     # "silk.middleware.SilkyMiddleware",
 ]
+
+MIDDLEWARE.insert(  # this must resolve to first MIDDLEWARE entry
+    0, 
+    "django_hosts.middleware.HostsRequestMiddleware"
+)
+
+MIDDLEWARE.append(  # this must resolve last MIDDLEWARE entry
+    "django_hosts.middleware.HostsResponseMiddleware"
+)  
 
 #ALLOWED_HOSTS = ['databasemahsa.org']
 ALLOWED_HOSTS = ['*']
@@ -352,13 +368,3 @@ except ImportError as e:
     except ImportError as e:
         pass
 
-# returns an output that can be read by NODEJS
-if __name__ == "__main__":
-    transmit_webpack_django_config(
-        root_dir=ROOT_DIR,
-        app_root=APP_ROOT,
-        arches_applications=ARCHES_APPLICATIONS,
-        public_server_address=PUBLIC_SERVER_ADDRESS,
-        static_url=STATIC_URL,
-        webpack_development_server_port=WEBPACK_DEVELOPMENT_SERVER_PORT,
-    )
