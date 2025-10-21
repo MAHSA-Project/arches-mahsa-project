@@ -343,8 +343,9 @@ LANGUAGE_CODE = "en"
 # {langcode}-{regioncode} eg: en, en-gb ....
 # a list of language codes can be found here http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGES = [
-    ('ur', _('Urdu')),
     ('en', _('English')),
+    ('hi', _('Hindi')),
+    ('ur', _('Urdu')),
 #   ('en-gb', _('British English')),
 #   ('es', _('Spanish')),
 ]
